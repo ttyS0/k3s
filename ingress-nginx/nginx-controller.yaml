@@ -24,19 +24,6 @@ data:
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: tcp-services
-  namespace: ingress-nginx
-  labels:
-    app.kubernetes.io/name: ingress-nginx
-    app.kubernetes.io/part-of: ingress-nginx
-data:
-  22: "gitea/gitea:22"
-
-
----
-kind: ConfigMap
-apiVersion: v1
-metadata:
   name: udp-services
   namespace: ingress-nginx
   labels:
@@ -185,7 +172,7 @@ rules:
     resources:
       - configmaps
     resourceNames:
-      - ingress-controller-leader-nginx
+      - ingress-controller-leader
     verbs:
       - get
       - update
@@ -360,7 +347,6 @@ metadata:
     app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/part-of: ingress-nginx
 spec:
-  externalTrafficPolicy: Local
   type: LoadBalancer
   ports:
     - name: http
@@ -374,10 +360,6 @@ spec:
     - name: prom
       port: 10254
       targetPort: 10254
-      protocol: TCP
-    - name: proxied-tcp-22
-      port: 22
-      targetPort: 22
       protocol: TCP
   selector:
     app.kubernetes.io/name: ingress-nginx

@@ -1,3 +1,3 @@
-# k3s-base
+# k3s
 
-base configs for k3s instance
+stripped down deployments to free tier oracle cloud
