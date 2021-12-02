@@ -29,7 +29,7 @@ spec:
     spec:
       nodeName: elrond
       containers:
-        - image: library/ghost:4.22.4
+        - image: library/ghost:4.24.0
           name: ghost-beezuscomplex
           env:
             - name: database__connection__user
