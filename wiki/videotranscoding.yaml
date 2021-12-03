@@ -1,0 +1,130 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: videotranscoding
+  namespace: wiki
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: videotranscoding
+  namespace: wiki
+  labels:
+    app.kubernetes.io/name: wikijs
+    app.kubernetes.io/instance: videotranscoding
+spec:
+  strategy:
+    type: Recreate
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: wikijs
+      app.kubernetes.io/instance: videotranscoding
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: wikijs
+        app.kubernetes.io/instance: videotranscoding
+    spec:
+      nodeName: elrond
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: wikijs
+          image: requarks/wiki:2.5.219
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: DB_TYPE
+              value: postgres
+            - name: DB_HOST
+              value: "postgres.db.svc"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              value: "wikijs_videotranscoding"
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  key: "pguser"
+                  name: videotranscodingdb
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: videotranscodingdb
+                  key: "pgpass"
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+          volumeMounts:
+            - mountPath: /wiki/data
+              name: data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: videotranscoding
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: videotranscoding
+  namespace: wiki
+  labels:
+    app.kubernetes.io/name: wikijs
+    app.kubernetes.io/instance: videotranscoding
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: wikijs
+    app.kubernetes.io/instance: videotranscoding
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: videotranscoding
+  namespace: wiki
+  labels:
+    app.kubernetes.io/name: wikijs
+    app.kubernetes.io/instance: videotranscoding
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.kubernetes.io/ssl-redirect: "true"
+    kubernetes.io/tls-acme: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt"
+
+spec:
+  rules:
+    - host: "videotranscoding.wiki"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: videotranscoding
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - videotranscoding.wiki
+      secretName: videotranscoding-wiki-cert
+

@@ -1,0 +1,129 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: skj
+  namespace: wiki
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: skj
+  namespace: wiki
+  labels:
+    app.kubernetes.io/name: wikijs
+    app.kubernetes.io/instance: skj
+spec:
+  strategy:
+    type: Recreate
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: wikijs
+      app.kubernetes.io/instance: skj
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: wikijs
+        app.kubernetes.io/instance: skj
+    spec:
+      nodeName: elrond
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: wikijs
+          image: requarks/wiki:2.5.219
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: DB_TYPE
+              value: postgres
+            - name: DB_HOST
+              value: "postgres.db.svc"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              value: "wikijs_skj"
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  key: "pguser"
+                  name: skjdb
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: skjdb
+                  key: "pgpass"
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+          volumeMounts:
+            - mountPath: /wiki/data
+              name: data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: skj
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: skj
+  namespace: wiki
+  labels:
+    app.kubernetes.io/name: wikijs
+    app.kubernetes.io/instance: skj
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: wikijs
+    app.kubernetes.io/instance: skj
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: skj
+  namespace: wiki
+  labels:
+    app.kubernetes.io/name: wikijs
+    app.kubernetes.io/instance: skj
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.kubernetes.io/ssl-redirect: "true"
+    kubernetes.io/tls-acme: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt"
+spec:
+  rules:
+    - host: "skj.wiki"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: skj
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - skj.wiki
+      secretName: skj-wiki-cert
+
