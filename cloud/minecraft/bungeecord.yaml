@@ -42,8 +42,6 @@ spec:
             - name: bungeecord
               mountPath: "/minecraft"
           env:
-            - name: JVM_OPTS
-              value: "-Xms1G -Xmx1G"
             - name: BUNGEE_HOME
               value: "/minecraft/bungeecord"
       volumes:
