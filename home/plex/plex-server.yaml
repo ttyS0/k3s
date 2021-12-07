@@ -44,7 +44,7 @@ spec:
           - name: ndots
             value: "1"
       containers:
-        - image: plexinc/pms-docker:1.25.0.5282-2edd3c44d
+        - image: plexinc/pms-docker:1.25.1.5286-34f965be8
           name: plex
           env:
             - name: HOSTNAME
