@@ -46,7 +46,7 @@ spec:
               mountPath: /minecraft/amber
           env:
             - name: JVM_OPTS
-              value: "-Xms4G -Xmx4G -Djava.util.concurrent.ForkJoinPool.common.parallelism=1"
+              value: "-Xms4G -Xmx4G -Djava.util.concurrent.ForkJoinPool.common.parallelism=1 -Dlog4j2.formatMsgNoLookups=true"
             - name: SPIGOT_DIR
               value: "/minecraft/amber"
             - name: SPIGOT_OPTS

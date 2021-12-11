@@ -44,6 +44,8 @@ spec:
           env:
             - name: BUNGEE_HOME
               value: "/minecraft/bungeecord"
+            - name: JVM_OPTS
+              value: "-Dlog4j2.formatMsgNoLookups=true"
       volumes:
         - name: bungeecord
           persistentVolumeClaim:
