@@ -35,7 +35,7 @@ spec:
       nodeName: elrond
       containers:
         - name: amber
-          image: ghcr.io/ttys0/spigot:1.18
+          image: ghcr.io/ttys0/spigot-arm64:1.18.1
           workingDir: "/minecraft/amber"
           ports:
             - containerPort: 25565
@@ -46,7 +46,7 @@ spec:
               mountPath: /minecraft/amber
           env:
             - name: JVM_OPTS
-              value: "-Xms4G -Xmx4G -Djava.util.concurrent.ForkJoinPool.common.parallelism=1 -Dlog4j2.formatMsgNoLookups=true"
+              value: "-Xms4G -Xmx4G -Djava.util.concurrent.ForkJoinPool.common.parallelism=1"
             - name: SPIGOT_DIR
               value: "/minecraft/amber"
             - name: SPIGOT_OPTS
