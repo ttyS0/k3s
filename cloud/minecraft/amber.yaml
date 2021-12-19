@@ -35,7 +35,7 @@ spec:
       nodeName: elrond
       containers:
         - name: amber
-          image: ghcr.io/ttys0/spigot-arm64:1.18.1
+          image: ghcr.io/ttys0/spigot:1.18.1
           workingDir: "/minecraft/amber"
           ports:
             - containerPort: 25565
