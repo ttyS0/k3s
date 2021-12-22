@@ -31,7 +31,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: nextcloud
-          image: library/nextcloud:22.2.3-apache
+          image: library/nextcloud:23.0.0-apache
           imagePullPolicy: IfNotPresent
           env:
             - name: OVERWRITEPROTOCOL
