@@ -1,11 +1,31 @@
 apiVersion: v1
-kind: PersistentVolumeClaim
+kind: PersistentVolume
 metadata:
-  name: plex-data
+  name: plex-media
   namespace: plex
 spec:
+  capacity:
+    storage: 60Ti
+  volumeMode: Filesystem
   accessModes:
-    - ReadWriteOnce
+    - ReadOnlyMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs
+  mountOptions:
+    - nfsvers=4.1
+  nfs:
+    path: /plex
+    server: 10.0.1.55
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: plex-media
+  namespace: plex
+spec:
+  storageClassName: nfs
+  accessModes:
+    - ReadOnlyMany
   resources:
     requests:
       storage: 60Ti
@@ -44,7 +64,7 @@ spec:
           - name: ndots
             value: "1"
       containers:
-        - image: plexinc/pms-docker:1.25.2.5319-c43dc0277
+        - image: plexinc/pms-docker:1.25.3.5409-f11334058
           name: plex
           env:
             - name: HOSTNAME
@@ -58,8 +78,9 @@ spec:
               mountPath: /config
             - name: plex-transcode
               mountPath: /transcode
-            - name: plex-data
+            - name: plex-media
               mountPath: /media
+              readOnly: true
           resources:
             limits:
               gpu.intel.com/i915: 1
@@ -71,9 +92,9 @@ spec:
             claimName: plex-config
         - name: plex-transcode
           emptyDir: {}
-        - name: plex-data
+        - name: plex-media
           persistentVolumeClaim:
-            claimName: plex-data
+            claimName: plex-media
 ---
 apiVersion: v1
 kind: Service
