@@ -1,8 +1,0 @@
-resources:
-  - vault.yaml
-
-namespace: vault
-
-images:
-  - name: hashicorp/vault
-    newTag: 1.9.2
