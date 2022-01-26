@@ -1,9 +1,0 @@
-resources:
-  - skj.yaml
-  - videotranscoding.yaml
-
-namespace: wiki
-
-images:
-  - name: requarks/wiki
-    newTag: 2.5.268
